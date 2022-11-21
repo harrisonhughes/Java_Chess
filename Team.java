@@ -1,30 +1,24 @@
 package Chess;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class Team {
 	private LinkedList<Piece> teamPieces = new LinkedList<Piece>();
+	private ArrayList<int[]> boardSnapshot = new ArrayList<int[]>();
+	private static int noPawnMoveOrCapture = 0;
+	private boolean pawnMove;
 	private boolean check = false;
 	
 	public Team(String color, Board board)
 	{
 		teamPieces.add(new King(color, board));
-		teamPieces.add(new Queen(color, board));
-		teamPieces.add(new Rook(color, board));
-		teamPieces.add(new Rook(color, board));
 		teamPieces.add(new Bishop(color, board));
 		teamPieces.add(new Bishop(color, board));
 		teamPieces.add(new Knight(color, board));
 		teamPieces.add(new Knight(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board)); 
 	}
 	
 	public Team(Team otherTeam)
@@ -34,13 +28,32 @@ public class Team {
 
 	public boolean movePiece(String chessMove, Board board, Team otherTeam)
 	{			
+		for(int i = 0; i < chessMove.length(); i++)
+		{
+			if(chessMove.charAt(i) == 'x')
+			{
+				chessMove = chessMove.substring(0, i) + chessMove.substring(i + 1, chessMove.length());
+			}
+		}
+		
+		pawnMove = false;
+		if(chessMove.charAt(0) >= 'a' && chessMove.charAt(0) <= 'h')
+		{
+			chessMove = "P" + chessMove;
+			pawnMove = true;
+		}
+		
+		if(chessMove.contains("+") || chessMove.contains("#"))
+		{
+			chessMove = chessMove.substring(0, chessMove.length() - 1);
+		}
+		
 		if(castleKing(chessMove, board, otherTeam))
 		{
 			return true;
 		}
-			
-		Piece currentPiece = getSpecificPiece(chessMove, otherTeam);
 		
+		Piece currentPiece = getSpecificPiece(chessMove, otherTeam);
 		if(currentPiece == null)
 		{
 			return false;
@@ -62,9 +75,7 @@ public class Team {
 			}
 		}
 		
-		boolean validMove = false;
-		validMove = currentPiece.movePiece(chessMove, board);
-		if(validMove)
+		if(currentPiece.movePiece(chessMove, board))
 		{
 			if(promote)
 			{
@@ -82,10 +93,11 @@ public class Team {
 				setMoves(teamPieces.get(i), otherTeam);
 			}
 			currentPiece.setFirstMove();
+			kingInCheck(otherTeam);
+			return true;
 		}
 		
-		kingInCheck(otherTeam);
-		return validMove;
+		return false;
 	}
 	
 	public void printPossibleMoves(Team otherTeam)
@@ -94,10 +106,18 @@ public class Team {
 		{
 			Piece currentPiece = teamPieces.get(i);
 			setMoves(currentPiece, otherTeam);
-			System.out.println("Possible Moves for: " + currentPiece.getPiece());
+			System.out.println("Possible Moves for " + currentPiece.getPiece() + " on " + currentPiece.intToChess(currentPiece.getPosition()).substring(1, 3) + ": ");
 			for(int j = 0; j < currentPiece.getPossibleMoves().size(); j++)
 			{
-					System.out.println(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
+					System.out.print(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
+					if(j < currentPiece.getPossibleMoves().size() - 1)
+					{
+						System.out.print(", ");
+					}
+					else
+					{
+						System.out.print("\n");
+					}
 			}
 			System.out.print("\n");
 		}
@@ -358,19 +378,111 @@ public class Team {
 		return null;
 	}
 	
-	public boolean kingInCheckmate(Team otherTeam)
+	public void checkDraw(Team otherTeam)
+	{
+		int thisTotalPieces = teamPieces.size();
+		int otherTotalPieces = otherTeam.getPieceList().size();
+		int currentPieces = thisTotalPieces + otherTotalPieces;
+		boolean insuffMaterial = false;
+		if(thisTotalPieces <= 2 && otherTotalPieces <= 2)
+		{
+			insuffMaterial = true;
+			for(int i = 0; i < thisTotalPieces; i++)
+			{
+				if(teamPieces.get(i).getPiece().substring(1).equals("Q") ||  teamPieces.get(i).getPiece().substring(1).equals("R") 
+						|| teamPieces.get(i).getPiece().substring(1).equals("P"))
+				{
+					insuffMaterial = false;
+				}
+			}
+			for(int i = 0; i < otherTotalPieces; i++)
+			{
+				if(otherTeam.getPieceList().get(i).getPiece().substring(1).equals("Q") ||  otherTeam.getPieceList().get(i).getPiece().substring(1).equals("R")
+						|| otherTeam.getPieceList().get(i).getPiece().substring(1).equals("P"))
+				{
+					insuffMaterial = false;
+				}
+			}
+		}
+		if(insuffMaterial)
+		{
+			System.out.print("Draw by Insufficient Material");
+			System.exit(0);
+		}
+		
+		final int START_PIECES = 32;
+		int lastSnapshotPieces = START_PIECES;
+		if(boardSnapshot.size() >= 1)
+		{
+			lastSnapshotPieces = boardSnapshot.get(boardSnapshot.size() - 1).length;
+		}
+
+		if(pawnMove || currentPieces != lastSnapshotPieces)
+		{
+			boardSnapshot = new ArrayList<int[]>();
+			noPawnMoveOrCapture = 0;
+		}
+		else
+		{
+			noPawnMoveOrCapture ++;
+		}
+		
+		int[] currentBoard = new int[currentPieces];
+		
+		for(int i = 0; i < thisTotalPieces; i++)
+		{
+			currentBoard[i] = teamPieces.get(i).getPosition();
+		}
+		for(int i = 0; i < otherTotalPieces; i++)
+		{
+			currentBoard[i + thisTotalPieces] = otherTeam.getPieceList().get(i).getPosition();
+		}
+		boardSnapshot.add(currentBoard);
+
+		int repitition = 0;
+		for(int i = 0; i < boardSnapshot.size(); i++)
+		{
+			if(Arrays.equals(currentBoard, boardSnapshot.get(i)))
+			{
+				repitition ++;
+			}
+		}
+		if(noPawnMoveOrCapture == 100)
+		{
+			System.out.print("Draw by 50-move rule");
+			System.exit(0);
+		}
+		else if(repitition == 3)
+		{
+			System.out.print("Draw by Threefold Repitition");
+			System.exit(0);
+		}
+	}
+	
+	public void checkGameStatus(Team otherTeam)
 	{
 		for(int i = 0; i < teamPieces.size(); i++)
 		{
 			setMoves(teamPieces.get(i), otherTeam);
 			if(teamPieces.get(i).getPossibleMoves().size() > 0)
 			{
+				otherTeam.checkDraw(this);
 				otherTeam.kingInCheck(this);
-				return false;
+				return;
 			}
 		}
-		// Check and Stale
-		return true;
+		if(getCheck())
+		{
+			if(getPieceList().get(0).getTeam())
+			{
+				System.out.println("Checkmate. Black Wins!");
+				System.exit(0);
+			}
+			System.out.println("Checkmate. White Wins!");
+			System.exit(0);
+		}
+		System.out.println("Draw by Stalemate");
+		System.exit(0);
 	}
 	
 	public void kingInCheck(Team otherTeam)
@@ -415,8 +527,5 @@ public class Team {
 			}
 		}
 	}
-
-	
-
 }
 
