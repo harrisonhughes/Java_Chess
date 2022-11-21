@@ -15,11 +15,6 @@ public class Game {
 		String move;
 		for(int i = 0; i < 100; i++)
 		{
-			if(white.kingInCheckmate(black) && i != 0)
-			{
-				System.out.println("CHECKMATE");
-				System.exit(0);
-			}
 			if(white.getCheck())
 			{
 				System.out.print("CHECK... ");
@@ -39,12 +34,7 @@ public class Game {
 				move = input.nextLine();
 			}
 			board.displayBoard();
-			
-			if(black.kingInCheckmate(white))
-			{
-				System.out.println("CHECKMATE");
-				System.exit(0);
-			}
+			black.checkGameStatus(white);
 			
 			if(black.getCheck())
 			{
@@ -65,6 +55,7 @@ public class Game {
 				move = input.nextLine();
 			}
 			board.displayBoard();
+			white.checkGameStatus(black);
 		}
 		input.close();
 	}
