@@ -15,10 +15,21 @@ public class Team {
 	public Team(String color, Board board)
 	{
 		teamPieces.add(new King(color, board));
+		teamPieces.add(new Queen(color, board));
+		teamPieces.add(new Rook(color, board));
+		teamPieces.add(new Rook(color, board));
 		teamPieces.add(new Bishop(color, board));
 		teamPieces.add(new Bishop(color, board));
 		teamPieces.add(new Knight(color, board));
 		teamPieces.add(new Knight(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board));
+		teamPieces.add(new Pawn(color, board)); 
 	}
 	
 	public Team(Team otherTeam)
