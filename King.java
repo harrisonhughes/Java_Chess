@@ -3,14 +3,24 @@ package Chess;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+/**
+ * A class to hold all of the rules and information that the King piece has. This class inherits the Piece class and all 
+ * of its information and rules that correspond to general behaviors of all pieces.
+ */
 public class King extends Piece{
 	private final int WHITE_START = 40;
 	private final int BLACK_START = 47;
 	
+	/**
+	 * Constructor, provides the team, piece type, and start position of the piece to the Piece superclass, and sends this 
+	 * information to the board parameter to display its initial position.
+	 * @param team A string code corresponding to the team of the piece, "W" for white, and "B" for black within this program
+	 * @param board The chess board that keeps track of all of the pieces in the current game
+	 */
 	public King(String team, Board board)
 	{
 		setTeam(team);
-		super.setPiece(team + "K");
+		setPiece(team + "K");
 		
 		if(team.equals("W"))
 		{
@@ -21,60 +31,73 @@ public class King extends Piece{
 			setPosition(BLACK_START);
 		}
 		board.updatePiece(this);
-		setVacuumMoves();
 	}
 	
-	@Override
+	/**
+	 * Generates the vacuum moves for this king piece based on its current position. Based on the rules of the king, its vacuum moves are 
+	 * the same as its squares attacked; this property eliminates the need for a separate method to calculate squares attacked in this class
+	 * @Override
+	 */
 	public void setVacuumMoves()
 	{
-		int row = getPosition() % 10;
-		int column = getPosition() / 10;
+		final int BOARD_WIDTH = 8; 
+		final int BOARD_HEIGHT = BOARD_WIDTH;
+		final int KING_RANGE = 1;
+		
+		int row = getPosition() % 10; 
+		int column = getPosition() / 10; 
 		LinkedList<Integer> vacuumMoves = new LinkedList<Integer>();
 
-		for(int i = 0; i < 8; i++)
+		for(int i = 0; i < BOARD_WIDTH; i++)
 		{
-			for(int j = 0; j < 8; j++)
+			for(int j = 0; j < BOARD_HEIGHT; j++)
 			{
-				if(Math.abs(column - i) <= 1 && Math.abs(row - j) <= 1 && Math.abs(column - i) + Math.abs(row - j) != 0)
+				if(Math.abs(column - i) <= KING_RANGE && Math.abs(row - j) <= KING_RANGE && Math.abs(column - i) + Math.abs(row - j) != 0)
 				{
 					vacuumMoves.add(10 * i + j);
 				}
 			}
 		}
-		super.setVacuumMoves(vacuumMoves);
-		super.setSquaresAttacked(vacuumMoves);
+		setSquaresAttacked(vacuumMoves); // Initializes squares attacked and possible moves with the comprehensive list of vacuum moves
+		setPossibleMoves(vacuumMoves);
 	}
 	
-	public void setSquaresAttacked(Piece piece)
-	{
-		return;
-	}
-	
+	/**
+	 * Copies the current list of possible moves and removes any move that is illegal based on the position and rules of the piece 
+	 * in the parameter.
+	 * @param piece A piece of any type whose information will be used to refine the possible moves of the current piece
+	 * @Override
+	 */
 	public void setPossibleMoves(Piece piece)
 	{
 		super.setPossibleMoves(piece);
 		
 		LinkedList<Integer> possibleMoves = new LinkedList<Integer>(getPossibleMoves());
-		ListIterator<Integer> thisIterator = possibleMoves.listIterator();
+		ListIterator<Integer> moveIterator = possibleMoves.listIterator();
 		if(piece.getTeam() != getTeam())
 		{	
-			while(thisIterator.hasNext())
+			while(moveIterator.hasNext())
 			{
-				int thisMove = thisIterator.next();
+				int currentMove = moveIterator.next();
 				ListIterator<Integer> otherIterator = piece.getSquaresAttacked().listIterator();
 				while(otherIterator.hasNext())
 				{	
-					if(thisMove == otherIterator.next())
+					if(currentMove == otherIterator.next())
 					{
-						thisIterator.remove();
+						moveIterator.remove();
 					}
 				}
 			}
 		}
-		
-		super.setPossibleMoves(possibleMoves);
+		setPossibleMoves(possibleMoves);
 	}
 	
+	/**
+	 * Checks if the parameter piece attacks the current position of this piece, and returns the boolean result
+	 * @param piece The piece that may or may not put the King in check
+	 * @return true if the King is currently in check, false if else
+	 * @Override
+	 */
 	public boolean isCheck(Piece piece)
 	{
 		for(int i = 0; i < piece.getSquaresAttacked().size(); i++)

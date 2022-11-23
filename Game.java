@@ -12,50 +12,55 @@ public class Game {
 		board.displayBoard();
 	
 		Scanner input = new Scanner(System.in);
-		String move;
-		for(int i = 0; i < 100; i++)
+		String move = "";
+		int moves = 0;
+		while(!move.equals("Resign"))
 		{
-			if(white.getCheck())
+			if(moves % 2 == 0)
 			{
-				System.out.print("CHECK... ");
-			}
-			System.out.print("Move " + (i + 1) + ": White, enter move: ");
-			move = input.nextLine();
-			
-			if(move.equals("Print"))
-			{
-				white.printPossibleMoves(black);
-				System.out.print("White, enter move; ");
+				if(white.getCheck())
+				{
+					System.out.print("CHECK... ");
+				}
+				System.out.print("Move " + (moves / 2 + 1) + ": White, enter move: ");
 				move = input.nextLine();
+				
+				if(move.equals("Print"))
+				{
+					white.printPossibleMoves(black);
+					System.out.print("White, enter move; ");
+					move = input.nextLine();
+				}
+				while(!white.movePiece(move, board, black))
+				{
+					move = input.nextLine();
+				}
+				board.displayBoard();
+				black.checkGameStatus(white);
 			}
-			while(!white.movePiece(move, board, black))
+			else
 			{
-				System.out.print("Invalid square, try again: ");
-				move = input.nextLine();
-			}
-			board.displayBoard();
-			black.checkGameStatus(white);
-			
-			if(black.getCheck())
-			{
-				System.out.print("CHECK... ");
-			}
-			System.out.print("Black, enter move; ");
-			move = input.nextLine();
-			
-			if(move.equals("Print"))
-			{
-				black.printPossibleMoves(white);
+				if(black.getCheck())
+				{
+					System.out.print("CHECK... ");
+				}
 				System.out.print("Black, enter move; ");
 				move = input.nextLine();
+				
+				if(move.equals("Print"))
+				{
+					black.printPossibleMoves(white);
+					System.out.print("Black, enter move; ");
+					move = input.nextLine();
+				}
+				while(!black.movePiece(move, board, white))
+				{
+					move = input.nextLine();
+				}
+				board.displayBoard();
+				white.checkGameStatus(black);
 			}
-			while(!black.movePiece(move, board, white))
-			{
-				System.out.print("Invalid square, try again: ");
-				move = input.nextLine();
-			}
-			board.displayBoard();
-			white.checkGameStatus(black);
+			moves ++;
 		}
 		input.close();
 	}
