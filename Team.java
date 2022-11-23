@@ -647,6 +647,7 @@ public class Team
 		final int WHITE_TEAM = 1;
 		 
 		otherTeam.checkDraw(this); // Halts program if there is a draw, else this method continues
+		otherTeam.kingInCheck(this);
 		for(int i = 0; i < teamPieces.size(); i++)
 		{ 
 			if(teamPieces.get(i).getPossibleMoves().size() > 0)
@@ -654,8 +655,7 @@ public class Team
 				return;
 			}
 		}
-		
-		otherTeam.kingInCheck(this);
+
 		if(getCheck())
 		{
 			if(getPieceList().get(0).getTeam() == WHITE_TEAM)
