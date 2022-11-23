@@ -39,76 +39,79 @@ public class Team {
 
 	public boolean movePiece(String chessMove, Board board, Team otherTeam)
 	{			
-		for(int i = 0; i < chessMove.length(); i++)
+		try
 		{
-			if(chessMove.charAt(i) == 'x')
-			{
-				chessMove = chessMove.substring(0, i) + chessMove.substring(i + 1, chessMove.length());
-			}
-		}
-		
-		pawnMove = false;
-		if(chessMove.charAt(0) >= 'a' && chessMove.charAt(0) <= 'h')
-		{
-			chessMove = "P" + chessMove;
-			pawnMove = true;
-		}
-		
-		if(chessMove.contains("+") || chessMove.contains("#"))
-		{
-			chessMove = chessMove.substring(0, chessMove.length() - 1);
-		}
-		
-		if(castleKing(chessMove, board, otherTeam))
-		{
-			return true;
-		}
-		
-		Piece currentPiece = getSpecificPiece(chessMove, otherTeam);
-		if(currentPiece == null)
-		{
-			return false;
-		}
-		
-		boolean promote = false;
-		String promoteString = null;
-		if(currentPiece.promotionPossible())
-		{
-			if(chessMove.contains("="))
-			{
-				promote = true;
-				promoteString = chessMove;
-				chessMove = chessMove.substring(0, chessMove.length() - 2); 
-			}
-			else
-			{
-				return false;
-			}
-		}
-		
-		if(currentPiece.movePiece(chessMove, board))
-		{
-			if(promote)
-			{
-				currentPiece = promotePawn(promoteString, currentPiece, otherTeam, board);
-			}
-			for(int i = 0; i < otherTeam.getPieceList().size(); i++)
-			{
-				if(otherTeam.getPieceList().get(i).getPosition() == currentPiece.getPosition())
-				{
-					otherTeam.removePiece(otherTeam.getPieceList().get(i));
-				}
-			}
 			for(int i = 0; i < teamPieces.size(); i++)
 			{
 				setMoves(teamPieces.get(i), otherTeam);
 			}
-			currentPiece.setFirstMove();
-			kingInCheck(otherTeam);
+			
+			chessMove = formatChessMove(chessMove);
+			if(castleKing(chessMove, board, otherTeam))
+			{
+				return true;
+			}
+			
+			Piece currentPiece = getSpecificPiece(chessMove, otherTeam);
+			if(currentPiece == null)
+			{
+				return false;
+			}
+			
+			boolean promote = false;
+			String promoteString = null;
+			if(currentPiece.promotionPossible())
+			{
+				if(chessMove.contains("="))
+				{
+					promote = true;
+					promoteString = chessMove;
+					chessMove = chessMove.substring(0, chessMove.length() - 2); 
+				}
+				else
+				{
+					System.out.print("Must clarify promotion type, try again: ");
+					return false;
+				}
+			}
+
+			if(currentPiece.movePiece(chessMove, board))
+			{
+				if(promote)
+				{
+					currentPiece = promotePawn(promoteString, currentPiece, otherTeam, board);
+				}
+				for(int i = 0; i < otherTeam.getPieceList().size(); i++)
+				{
+					if(otherTeam.getPieceList().get(i).getPosition() == currentPiece.getPosition())
+					{
+						otherTeam.removePiece(otherTeam.getPieceList().get(i), board);
+					}
+					else if(otherTeam.getPieceList().get(i).getEnPassant() 
+							&& (currentPiece.getPosition() / 10) == (otherTeam.getPieceList().get(i).getPosition() / 10) 
+							&& (currentPiece.getPosition() % 10) == ((otherTeam.getPieceList().get(i).getPosition() % 10) + currentPiece.getTeam()))
+					{
+						board.deleteOldPiece(otherTeam.getPieceList().get(i));
+						otherTeam.removePiece(otherTeam.getPieceList().get(i), board);
+					}
+				}
+				for(int i = 0; i < teamPieces.size(); i++)
+				{
+					teamPieces.get(i).setEnPassant(false);
+				}
+				if(currentPiece.getFirstMove() && ((currentPiece.getPosition() % 10 == 3) || (currentPiece.getPosition() % 10 == 4)))
+				{
+					currentPiece.setEnPassant(true);
+				}
+				currentPiece.setFirstMove();
+			}
 			return true;
 		}
-		
-		return false;
+		catch(RuntimeException e)
+		{
+			System.out.print("Invalid move, try again: ");
+			return false;
+		}
 	}
 	
 	public void printPossibleMoves(Team otherTeam)
@@ -243,13 +246,13 @@ public class Team {
 		int columnShift;
 		int rookWhitePosition;
 		int rookBlackPosition;
-		if(chessMove.equals("O-O"))
+		if(chessMove.equals("0-0"))
 		{
 			columnShift = MOVE_COLUMN;
 			rookWhitePosition = 70;
 			rookBlackPosition = 77;
 		}
-		else if(chessMove.equals("O-O-O"))
+		else if(chessMove.equals("0-0-0"))
 		{
 			columnShift = -1 * MOVE_COLUMN;
 			rookWhitePosition = 00;
@@ -272,23 +275,24 @@ public class Team {
 		{
 			return false;
 		}
-			
-		int castleMove = teamPieces.get(0).getPosition() + (columnShift);
-		String castleString = teamPieces.get(0).intToChess(castleMove);
 		
-		if(chessMove.equals("O-O-O"))
+		boolean piecesInWay = true;
+		for(int i = 0; i < castleRook.getSquaresAttacked().size(); i++)
 		{
-			castleMove += 2 * columnShift;
-			castleString = castleRook.intToChess(castleMove);
-			if(!castleRook.movePiece(castleString, board))
+			if(teamPieces.get(0).getPosition() == castleRook.getSquaresAttacked().get(i))
 			{
-				return false;
+				piecesInWay = false;
 			}
-			castleMove += -2 * columnShift;
-			castleString = castleRook.intToChess(castleMove);
+		}
+		if(piecesInWay)
+		{
+			return false;
 		}
 		
-		if(teamPieces.get(0).movePiece(castleString, board))
+		
+		int castleMove = teamPieces.get(0).getPosition() + (columnShift);
+		String castleString = teamPieces.get(0).intToChess(castleMove);
+		if(teamPieces.get(0).movePiece(castleString, board) && teamPieces.get(0).getFirstMove())
 		{
 			setMoves(teamPieces.get(0), otherTeam);
 			castleMove += columnShift;
@@ -310,10 +314,16 @@ public class Team {
 			return false;
 	}
 	
+	public boolean enPassant(String chessMove, Board board, Team otherTeam)
+	{
+		return false;
+	}
+	
 	public Piece getSpecificPiece(String chessMove, Team otherTeam)
 	{
 		boolean ambiguous = false;
-		String rowOrColumn = null;
+		String rowOrColumn = "";
+		String rowAndColumn = "";
 		if(chessMove.contains("="))
 		{
 			chessMove = chessMove.substring(0, chessMove.length() - 2);
@@ -331,6 +341,20 @@ public class Team {
 				rowOrColumn = "" + pieceChoice;
 			}
 		}
+		else if(chessMove.length() == 5)
+		{
+			ambiguous = true;
+			char rowChoice = chessMove.charAt(1);
+			char columnChoice = chessMove.charAt(2);
+			if(rowChoice <= 'h' && rowChoice >= 'a')
+			{
+				rowAndColumn = "" + rowChoice;
+			}
+			if(columnChoice <= '8' && columnChoice >= '1')
+			{
+				rowAndColumn += columnChoice;
+			}
+		}
 		
 		Piece specificPiece = null;
 		int piecesFound = 0;
@@ -338,18 +362,20 @@ public class Team {
 		for(int i = 0; i < teamPieces.size(); i++)
 		{
 			String pieceType = teamPieces.get(i).getPiece().substring(1, 2);
-			setMoves(teamPieces.get(i), otherTeam);
 			if(pieceChoice.equals(pieceType))
 			{
-				if(ambiguous && teamPieces.get(i).intToChess(teamPieces.get(i).getPosition()).substring(1, 2).equals(rowOrColumn))
+				if(ambiguous && (teamPieces.get(i).intToChess(teamPieces.get(i).getPosition()).substring(1, 3).equals(rowAndColumn)  
+						|| teamPieces.get(i).intToChess(teamPieces.get(i).getPosition()).substring(1, 2).equals(rowOrColumn)
+						|| teamPieces.get(i).intToChess(teamPieces.get(i).getPosition()).substring(2, 3).equals(rowOrColumn)))
 				{
-					specificPiece = teamPieces.get(i);
-					piecesFound ++;
-				}
-				else if(ambiguous && teamPieces.get(i).intToChess(teamPieces.get(i).getPosition()).substring(2, 3).equals(rowOrColumn))
-				{
-					specificPiece = teamPieces.get(i);
-					piecesFound ++;
+					for(int j = 0; j < teamPieces.get(i).getPossibleMoves().size(); j++)
+					{
+						if(teamPieces.get(i).getPossibleMoves().get(j) == teamPieces.get(i).chessToInt(chessMove))
+						{
+							specificPiece = teamPieces.get(i);
+							piecesFound ++;
+						}
+					}
 				}
 				else if(!ambiguous)
 				{
@@ -364,8 +390,14 @@ public class Team {
 				}
 			}
 		}
-		if(piecesFound != 1)
+		if(piecesFound > 1)
 		{
+			System.out.print("Ambiguous move, try again: ");
+			return null;
+		}
+		if(piecesFound == 0)
+		{
+			System.out.print("Invalid move, try again: ");
 			return null;
 		}
 		return specificPiece;
@@ -380,7 +412,7 @@ public class Team {
 		if(promotionType.equals("Q"))
 		{
 			Queen newQueen = new Queen(promoteSquare, promoteTeam);
-			removePiece(pawn);
+			removePiece(pawn, board);
 			teamPieces.add(newQueen);
 			board.deleteOldPiece(pawn);
 			board.updatePiece(newQueen);
@@ -394,10 +426,9 @@ public class Team {
 		int thisTotalPieces = teamPieces.size();
 		int otherTotalPieces = otherTeam.getPieceList().size();
 		int currentPieces = thisTotalPieces + otherTotalPieces;
-		boolean insuffMaterial = false;
+		boolean insuffMaterial = true;
 		if(thisTotalPieces <= 2 && otherTotalPieces <= 2)
 		{
-			insuffMaterial = true;
 			for(int i = 0; i < thisTotalPieces; i++)
 			{
 				if(teamPieces.get(i).getPiece().substring(1).equals("Q") ||  teamPieces.get(i).getPiece().substring(1).equals("R") 
@@ -414,11 +445,11 @@ public class Team {
 					insuffMaterial = false;
 				}
 			}
-		}
-		if(insuffMaterial)
-		{
-			System.out.print("Draw by Insufficient Material");
-			System.exit(0);
+			if(insuffMaterial)
+			{
+				System.out.print("Draw by Insufficient Material");
+				System.exit(0);
+			}
 		}
 		
 		final int START_PIECES = 32;
@@ -472,6 +503,7 @@ public class Team {
 	
 	public void checkGameStatus(Team otherTeam)
 	{
+		otherTeam.kingInCheck(this);
 		for(int i = 0; i < teamPieces.size(); i++)
 		{
 			setMoves(teamPieces.get(i), otherTeam);
@@ -484,7 +516,7 @@ public class Team {
 		}
 		if(getCheck())
 		{
-			if(getPieceList().get(0).getTeam())
+			if(getPieceList().get(0).getTeam() == 1)
 			{
 				System.out.println("Checkmate. Black Wins!");
 				System.exit(0);
@@ -524,7 +556,7 @@ public class Team {
 		return teamPieces;
 	}
 	
-	public void removePiece(Piece piece)
+	public void removePiece(Piece piece, Board board)
 	{
 		ListIterator<Piece> teamIterator = teamPieces.listIterator();
 		Piece currentPiece;
@@ -537,6 +569,30 @@ public class Team {
 				return;
 			}
 		}
+	}
+
+	public String formatChessMove(String chessMove)
+	{
+		for(int i = 0; i < chessMove.length(); i++)
+		{
+			if(chessMove.charAt(i) == 'x')
+			{
+				chessMove = chessMove.substring(0, i) + chessMove.substring(i + 1, chessMove.length());
+			}
+		}
+		
+		pawnMove = false;
+		if(chessMove.charAt(0) >= 'a' && chessMove.charAt(0) <= 'h')
+		{
+			chessMove = "P" + chessMove;
+			pawnMove = true;
+		}
+		
+		if(chessMove.contains("+") || chessMove.contains("#"))
+		{
+			chessMove = chessMove.substring(0, chessMove.length() - 1);
+		}
+		return chessMove;
 	}
 }
 
