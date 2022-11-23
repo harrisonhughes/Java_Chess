@@ -7,10 +7,8 @@ import java.util.ListIterator;
  * A class to hold all of the rules and information that the King piece has. This class inherits the Piece class and all 
  * of its information and rules that correspond to general behaviors of all pieces.
  */
-public class King extends Piece{
-	private final int WHITE_START = 40;
-	private final int BLACK_START = 47;
-	
+public class King extends Piece
+{
 	/**
 	 * Constructor, provides the team, piece type, and start position of the piece to the Piece superclass, and sends this 
 	 * information to the board parameter to display its initial position.
@@ -19,6 +17,9 @@ public class King extends Piece{
 	 */
 	public King(String team, Board board)
 	{
+		final int WHITE_START = 40;
+		final int BLACK_START = 47;
+		
 		setTeam(team);
 		setPiece(team + "K");
 		

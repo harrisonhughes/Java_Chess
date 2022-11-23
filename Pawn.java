@@ -7,9 +7,8 @@ import java.util.ListIterator;
  * A class to hold all of the rules and information that the Pawn piece has. This class inherits the Piece class and all 
  * of its information and rules that correspond to general behaviors of all pieces.
  */
-public class Pawn extends Piece{
-	private int white_first_position = 01;
-	private int black_first_position = 06;
+public class Pawn extends Piece
+{
 	private boolean enPassantPossible = false;
 	static int pieces = 0;
 	
@@ -21,8 +20,12 @@ public class Pawn extends Piece{
 	 */
 	public Pawn(String team, Board board)
 	{
+		int white_first_position = 01;
+		int black_first_position = 06;
+		
 		setTeam(team);
 		setPiece(team + "P");
+		
 		if(team.equals("W"))
 		{ // Each new piece added moves the starting position of the pawn one column to the right
 			setPosition(white_first_position + 10 * pieces);

@@ -7,11 +7,8 @@ import java.util.ListIterator;
  * A class to hold all of the rules and information that the Bishop piece has. This class inherits the Piece class and all 
  * of its information and rules that correspond to general behaviors of all pieces.
  */
-public class Bishop extends Piece{
-	private final int WHITE_START_LEFT = 20;
-	private final int WHITE_START_RIGHT = 50;
-	private final int BLACK_START_LEFT = 27;
-	private final int BLACK_START_RIGHT = 57;
+public class Bishop extends Piece
+{
 	static int pieces = 0;
 	
 	/**
@@ -22,6 +19,10 @@ public class Bishop extends Piece{
 	 */
 	public Bishop(String team, Board board)
 	{
+		final int WHITE_START_LEFT = 20;
+		final int WHITE_START_RIGHT = 50;
+		final int BLACK_START_LEFT = 27;
+		final int BLACK_START_RIGHT = 57;
 		setTeam(team);
 		setPiece(team + "B");
 		
@@ -43,6 +44,18 @@ public class Bishop extends Piece{
 			setPosition(BLACK_START_RIGHT);
 		}
 		board.updatePiece(this);
+	}
+	
+	/**
+	 * Constructor, needed for pawn promotion, as a pawn must copy its position and team to the new Bishop
+	 * @param position The position of the promoted pawn
+	 * @param team The team that the promoted pawn belonged to 
+	 */
+	public Bishop(int position, String team)
+	{
+		setTeam(team);
+		setPiece(team + "B");
+		setPosition(position);
 	}
 	
 	/**

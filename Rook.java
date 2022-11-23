@@ -7,11 +7,8 @@ import java.util.ListIterator;
  * A class to hold all of the rules and information that the Rook piece has. This class inherits the Piece class and all 
  * of its information and rules that correspond to general behaviors of all pieces.
  */
-public class Rook extends Piece{
-	private final int WHITE_START_LEFT = 00;
-	private final int WHITE_START_RIGHT = 70;
-	private final int BLACK_START_LEFT = 07;
-	private final int BLACK_START_RIGHT = 77;
+public class Rook extends Piece
+{
 	static int pieces = 0;
 	
 	/**
@@ -22,10 +19,15 @@ public class Rook extends Piece{
 	 */
 	public Rook(String team, Board board)
 	{
+		final int WHITE_START_LEFT = 00;
+		final int WHITE_START_RIGHT = 70;
+		final int BLACK_START_LEFT = 07;
+		final int BLACK_START_RIGHT = 77;
+		
 		setTeam(team);
 		setPiece(team + "R");
+		
 		pieces ++;
-			
 		if(pieces == 1)
 		{
 			setPosition(WHITE_START_LEFT);
@@ -43,6 +45,18 @@ public class Rook extends Piece{
 			setPosition(BLACK_START_RIGHT);
 		}
 		board.updatePiece(this);
+	}
+	
+	/**
+	 * Constructor, needed for pawn promotion, as a pawn must copy its position and team to the new Rook
+	 * @param position The position of the promoted pawn
+	 * @param team The team that the promoted pawn belonged to 
+	 */
+	public Rook(int position, String team)
+	{
+		setTeam(team);
+		setPiece(team + "R");
+		setPosition(position);
 	}
 	
 	/**

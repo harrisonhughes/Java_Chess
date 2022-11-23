@@ -655,7 +655,7 @@ public class Team
 				return;
 			}
 		}
-
+		
 		if(getCheck())
 		{
 			if(getPieceList().get(0).getTeam() == WHITE_TEAM)

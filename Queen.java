@@ -7,10 +7,8 @@ import java.util.ListIterator;
  * A class to hold all of the rules and information that the Queen piece has. This class inherits the Piece class and all 
  * of its information and rules that correspond to general behaviors of all pieces.
  */
-public class Queen extends Piece{
-	private final int WHITE_START = 30;
-	private final int BLACK_START = 37;
-	
+public class Queen extends Piece
+{
 	/**
 	 * Constructor, provides the team, piece type, and start position of the piece to the Piece superclass, and sends this 
 	 * information to the board parameter to display its initial position.
@@ -19,6 +17,9 @@ public class Queen extends Piece{
 	 */
 	public Queen(String team, Board board)
 	{
+		final int WHITE_START = 30;
+		final int BLACK_START = 37;
+		
 		setTeam(team);
 		setPiece(team + "Q");
 		
@@ -34,7 +35,7 @@ public class Queen extends Piece{
 	}
 	
 	/**
-	 * Copy constructor; needed for pawn promotion, as a pawn must copy its position and team to the new Queen
+	 * Constructor, needed for pawn promotion, as a pawn must copy its position and team to the new Queen
 	 * @param position The position of the promoted pawn
 	 * @param team The team that the promoted pawn belonged to 
 	 */
@@ -43,7 +44,6 @@ public class Queen extends Piece{
 		setTeam(team);
 		setPiece(team + "Q");
 		setPosition(position);
-		setVacuumMoves();
 	}
 	
 	/**

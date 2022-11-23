@@ -3,7 +3,8 @@ package Chess;
 /**
  * A class to keep track of the current arrangement of a chess board
  */
-public class Board {
+public class Board 
+{
 	private final int WIDTH = 8;
 	private final int HEIGHT = WIDTH;
 	private String[][] board = new String[WIDTH][HEIGHT];

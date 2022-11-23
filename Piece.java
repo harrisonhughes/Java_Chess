@@ -7,7 +7,8 @@ import java.util.ListIterator;
  * A class to hold the rules and information that all chess pieces have in common. This class is inherited by all
  * specific piece subclasses, where rules specific to each piece are implemented.
  */
-public class Piece {
+public class Piece 
+{
 	private int team;
 	private int currentPosition;
 	private LinkedList<Integer> squaresAttacked = new LinkedList<Integer>();
