@@ -25,22 +25,8 @@ public class Team
 	 */
 	public Team(String color, Board board)
 	{
-		teamPieces.add(new King(color, board));
-		teamPieces.add(new Queen(color, board));
 		teamPieces.add(new Rook(color, board));
 		teamPieces.add(new Rook(color, board));
-		teamPieces.add(new Bishop(color, board));
-		teamPieces.add(new Bishop(color, board));
-		teamPieces.add(new Knight(color, board));
-		teamPieces.add(new Knight(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board));
-		teamPieces.add(new Pawn(color, board)); 
 		
 		for(int i = 0; i < teamPieces.size(); i++)
 		{
@@ -106,7 +92,7 @@ public class Team
 				for(int i = 0; i < otherTeam.getPieceList().size(); i++)
 				{
 					// If the current piece is a pawn that is behind another piece, then we have the correct possible en Passant format
-					boolean enPassantFormat = (currentPiece.getPiece().substring(1) == "P") && (currentPiece.getPosition() / 10) 
+					boolean enPassantFormat = (currentPiece.getPiece().substring(1).equals("P")) && (currentPiece.getPosition() / 10) 
 							== (otherTeam.getPieceList().get(i).getPosition() / 10) && (currentPiece.getPosition() % 10) 
 							== ((otherTeam.getPieceList().get(i).getPosition() % 10) + currentPiece.getTeam());
 					
@@ -121,8 +107,7 @@ public class Team
 					}
 				}
 				for(int i = 0; i < teamPieces.size(); i++)
-				{ // Now that a new piece has been moved, we reset all moves and switch en Passant flags back to false
-					setMoves(teamPieces.get(i), otherTeam);
+				{ // Now that a new piece has been moved, we switch en Passant flags back to false;
 					teamPieces.get(i).setEnPassant(false);
 				}
 				if(currentPiece.getFirstMove() && ((currentPiece.getPosition() % 10 == FOURTH_ROW) || (currentPiece.getPosition() % 10 == FIFTH_ROW)))
@@ -130,6 +115,11 @@ public class Team
 					currentPiece.setEnPassant(true);
 				}
 				currentPiece.setFirstMove(); // Set first move to false for the current piece
+				
+				for(int i = 0; i < otherTeam.getPieceList().size(); i++)
+				{ // Set the possible moves for the other team
+					otherTeam.setMoves(otherTeam.getPieceList().get(i),this);
+				}
 				return true;
 			}
 			return false;
@@ -147,21 +137,24 @@ public class Team
 		{
 			Piece currentPiece = teamPieces.get(i);
 			setMoves(currentPiece, otherTeam);
-			System.out.println("Possible Moves for " + currentPiece.getPiece() + " on " 
-								+ currentPiece.intToChess(currentPiece.getPosition()).substring(1, 3) + ": ");
-			for(int j = 0; j < currentPiece.getPossibleMoves().size(); j++)
+			if(currentPiece.getPossibleMoves().size() > 0)
 			{
-					System.out.print(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
-					if(j < currentPiece.getPossibleMoves().size() - 1)
-					{
-						System.out.print(", ");
-					}
-					else
-					{
-						System.out.print("\n");
-					}
+				System.out.println("Possible Moves for " + currentPiece.getPiece() + " on " 
+									+ currentPiece.intToChess(currentPiece.getPosition()).substring(1, 3) + ": ");
+				for(int j = 0; j < currentPiece.getPossibleMoves().size(); j++)
+				{
+						System.out.print(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
+						if(j < currentPiece.getPossibleMoves().size() - 1)
+						{
+							System.out.print(", ");
+						}
+						else
+						{
+							System.out.print("\n");
+						}
+				}
+				System.out.print("\n");
 			}
-			System.out.print("\n");
 		}
 		
 	}
@@ -263,7 +256,7 @@ public class Team
 		ListIterator<Integer> moveIterator = moveList.listIterator();
 		
 		while(moveIterator.hasNext())
-		{ // Set the position of the current piece to each possible move, reset all possible moves, and see if the king is in check
+		{ // Set the position of the current piece to each possible move, generate new possible moves, and see if the king is in check
 			int currentMove = moveIterator.next();
 			currentPiece.setPosition(currentMove);
 			setPossibleMoves(currentPiece, otherTeam);
