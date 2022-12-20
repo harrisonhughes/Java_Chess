@@ -29,7 +29,7 @@ public class Game
 						}
 						else
 						{
-							System.out.print("White has declined the draw offer.\n\nWhite, enter move: ");
+							System.out.print("Black has declined the draw offer.\n\nWhite, enter move: ");
 						}
 					}
 					move = input.nextLine();
