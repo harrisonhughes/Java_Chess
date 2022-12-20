@@ -145,6 +145,34 @@ public class Team
 		}
 	}
 	
+	public void printPossibleMoves(Team otherTeam)
+	{	
+		for(int i = 0; i < teamPieces.size(); i++)
+		{
+			Piece currentPiece = teamPieces.get(i);
+			setMoves(currentPiece, otherTeam);
+			if(currentPiece.getPossibleMoves().size() > 0)
+			{
+				System.out.println("Possible Moves for " + currentPiece.getPiece() + " on " 
+									+ currentPiece.intToChess(currentPiece.getPosition()).substring(1, 3) + ": ");
+				for(int j = 0; j < currentPiece.getPossibleMoves().size(); j++)
+				{
+						System.out.print(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
+						if(j < currentPiece.getPossibleMoves().size() - 1)
+						{
+							System.out.print(", ");
+						}
+						else
+						{
+							System.out.print("\n");
+						}
+				}
+				System.out.print("\n");
+			}
+		}
+		
+	}
+	
 	/**
 	 * Sets all possible moves for a specific piece and the opposing team in terms of the current state of the board
 	 * @param currentPiece The piece we wish to set all possible moves for
@@ -530,7 +558,7 @@ public class Team
 	 * and the 50 move rule. If a draw is found, the program is halted and a message is displayed to the user. 
 	 * @param otherTeam The opposing team of pieces that is needed to calculate draw results
 	 */
-	public void checkDraw(Team otherTeam)
+	public boolean checkDraw(Team otherTeam)
 	{
 		int thisTotalPieces = teamPieces.size();
 		int otherTotalPieces = otherTeam.getPieceList().size();
@@ -557,7 +585,7 @@ public class Team
 			if(insuffMaterial)
 			{ // If both teams have at most one king and a minor piece remaining, there is no possible checkmate
 				System.out.print("Draw by Insufficient Material");
-				System.exit(0);
+				return false;
 			}
 		}
 		
@@ -607,13 +635,14 @@ public class Team
 		if(noPawnMoveOrCapture == 100)
 		{ // Since noPawnMoveOrCapture is static, a value of 100 in this variable means that 50 full turns have passed without a capture or pawn move
 			System.out.print("Draw by 50-move rule");
-			System.exit(0);
+			return false;
 		}
 		else if(repitition == 3)
 		{
 			System.out.print("Draw by Threefold Repitition");
-			System.exit(0);
+			return false;
 		}
+		return true;
 	}
 	
 	/**
@@ -621,17 +650,20 @@ public class Team
 	 * to the user. Otherwise, the program continues. 
 	 * @param otherTeam
 	 */
-	public void checkGameStatus(Team otherTeam)
+	public boolean checkGameStatus(Team otherTeam)
 	{
 		final int WHITE_TEAM = 1;
 		 
-		otherTeam.checkDraw(this); // Halts program if there is a draw, else this method continues
+		if(otherTeam.checkDraw(this) == false)
+		{// Halts program if there is a draw, else this method continues
+			return false;
+		}
 		otherTeam.kingInCheck(this);
 		for(int i = 0; i < teamPieces.size(); i++)
-		{ 
+		{ // If the current team has a possible move, the game will continue 
 			if(teamPieces.get(i).getPossibleMoves().size() > 0)
 			{
-				return;
+				return true;
 			}
 		}
 		
@@ -640,16 +672,16 @@ public class Team
 			if(teamPieces.get(0).getTeam() == WHITE_TEAM) // Checking the team of an arbitrary piece of the current team
 			{ // If the white team has no moves and is in check, else if the black team has no moves and is in check
 				System.out.println("Checkmate. Black Wins!");
-				System.exit(0);
+				return false;
 			}
 			else
 			{
 				System.out.println("Checkmate. White Wins!");
-				System.exit(0);
+				return false;
 			}
 		} 
 		System.out.println("Draw by Stalemate"); // If either team has no moves and is not in check
-		System.exit(0);
+		return false;
 	}
 	/**
 	 * Checks if a piece on this team currently attacks the opposing King

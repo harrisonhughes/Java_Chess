@@ -3,17 +3,8 @@ package Chess;
 import java.util.Scanner;
 public class Game 
 {
-
 	public static void main(String[] args) {
-		Board board = new Board();
-		Team white = new Team("W", board);
-		Team black = new Team("B", board);
 		board.displayBoard();
-	
-		Scanner input = new Scanner(System.in);
-		String move = "";
-		int moves = 0;
-		
 		while(true)
 		{
 			if(moves % 2 == 0)
@@ -25,18 +16,34 @@ public class Game
 				System.out.print("Move " + (moves / 2 + 1) + ": White, enter move: ");
 				move = input.nextLine();
 				
-				while(!move.equals("Resign") && !white.movePiece(move, board, black))
+				while(!move.toUpperCase().equals("RESIGN") && (move.toUpperCase().equals("DRAW") || !white.movePiece(move, board, black)))
 				{
+					if(move.toUpperCase().equals("DRAW"))
+					{
+						System.out.print("\nWhite has offered a draw.\nBlack, if you accept, enter \"Draw\" (otherwise press Enter): ");
+						move = input.nextLine();
+						if(move.toUpperCase().equals("DRAW"))
+						{
+							System.out.println("Draw by Player Agreement.");
+							endGame();
+						}
+						else
+						{
+							System.out.print("White has declined the draw offer.\n\nWhite, enter move: ");
+						}
+					}
 					move = input.nextLine();
 				}
-				if(move.equals("Resign"))
+				if(move.toUpperCase().equals("RESIGN"))
 				{
-					board.displayBoard();
-					System.out.println("White resigns on move " + moves + ".");
-					break;
+					System.out.println("White Resigns. Black Wins!");
+					endGame();
 				}
 				board.displayBoard();
-				black.checkGameStatus(white);
+				if(black.checkGameStatus(white) == false)
+				{
+					endGame();
+				}
 			}
 			else
 			{
@@ -44,26 +51,52 @@ public class Game
 				{
 					System.out.print("CHECK... ");
 				}
-				System.out.print("Black, enter move; ");
+				System.out.print("Black, enter move: ");
 				move = input.nextLine();
 				
-				while(!move.equals("Resign") && !black.movePiece(move, board, white))
+				while(!move.toUpperCase().equals("RESIGN") && (move.toUpperCase().equals("DRAW") || !black.movePiece(move, board, white)))
 				{
+					if(move.toUpperCase().equals("DRAW"))
+					{
+						System.out.print("\nBlack has offered a draw.\nWhite, if you accept, enter \"Draw\" (otherwise press Enter): ");
+						move = input.nextLine();
+						if(move.toUpperCase().equals("DRAW"))
+						{
+							System.out.println("Draw by Player Agreement.");
+							endGame();
+						}
+						else
+						{
+							System.out.print("White has declined the draw offer.\n\nBlack, enter move: ");
+						}
+					}
 					move = input.nextLine();
 				}
-				if(move.equals("Resign"))
+				if(move.toUpperCase().equals("RESIGN"))
 				{
-					board.displayBoard();
-					System.out.println("Black resigns on move " + moves + ".");
-					break;
+					System.out.println("Black Resigns. White Wins!");
+					endGame();
 				}
 				
 				board.displayBoard();
-				white.checkGameStatus(black);
+				if(white.checkGameStatus(black) == false)
+				{
+					endGame();
+				}
 			}
 			moves ++;
 		}
+	}
+	public static Board board = new Board();
+	public static Team white = new Team("W", board);
+	public static Team black = new Team("B", board);
+	public static String move = "";
+	public static int moves = 0;
+	public static Scanner input = new Scanner(System.in);
+	public static void endGame()
+	{
 		input.close();
+		System.exit(0);
 	}
 }
 
