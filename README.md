@@ -11,7 +11,7 @@ The command "Resign" can be entered at any point in the game, causing the curren
 
 The command "Draw" can be entered at any point in the game, at which point the other player will be prompted to accept or decline the offer.
 
-Otherwise, the game will continue until finished, either by a decisive result, or one of the many possible "draw" conditions. 
+Otherwise the game will continue until a decisive result or draw condition is found, where it will inform the user of the result, and terminate.
 
 
 
