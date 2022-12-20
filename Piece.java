@@ -27,22 +27,17 @@ public class Piece
 	{	
 		int newSquare = chessToInt(chessMove);
 		
-		boolean validMove = false;
 		for(int i = 0; i < possibleMoves.size(); i++)
 		{
 			if(newSquare == possibleMoves.get(i))
 			{
-				validMove = true;
+				board.deleteOldPiece(this);
+				setPosition(newSquare);
+				board.updatePiece(this);
+				return true;
 			}
 		}
-		
-		if(validMove)
-		{
-			board.deleteOldPiece(this);
-			setPosition(newSquare);
-			board.updatePiece(this);
-		}	
-		return validMove;
+		return false;
 	}
 
 	/**

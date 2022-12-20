@@ -41,6 +41,23 @@ public class Board
 		System.out.println("    a      b      c      d      e      f      g      h");
 	}
 	
+	public String option()
+	{
+		String result = "";
+		result += "  _______________________________________________________";
+		for(int j = WIDTH - 1; j >= 0 ; j--)
+		{
+			result += "\n |      |      |      |      |      |      |      |      |\n" + (j + 1);
+			for(int i = 0; i < HEIGHT; i++)
+			{
+				result += "|  " + board[i][j] + "  ";
+			}
+			result += "|\n |______|______|______|______|______|______|______|______|";
+		}
+		result += "\n    a      b      c      d      e      f      g      h\n";
+		return result;
+	}
+	
 	/**
 	 * Adds the Piece parameter to the current board, replacing the previous contents of that square
 	 * @param piece The specific piece that we wish to add to the board

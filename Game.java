@@ -1,8 +1,6 @@
 package Chess;
 
 import java.util.Scanner;
-
-
 public class Game 
 {
 
@@ -15,7 +13,8 @@ public class Game
 		Scanner input = new Scanner(System.in);
 		String move = "";
 		int moves = 0;
-		while(!move.equals("Resign"))
+		
+		while(true)
 		{
 			if(moves % 2 == 0)
 			{
@@ -26,15 +25,15 @@ public class Game
 				System.out.print("Move " + (moves / 2 + 1) + ": White, enter move: ");
 				move = input.nextLine();
 				
-				if(move.equals("Print"))
+				while(!move.equals("Resign") && !white.movePiece(move, board, black))
 				{
-					white.printPossibleMoves(black);
-					System.out.print("White, enter move; ");
 					move = input.nextLine();
 				}
-				while(!white.movePiece(move, board, black))
+				if(move.equals("Resign"))
 				{
-					move = input.nextLine();
+					board.displayBoard();
+					System.out.println("White resigns on move " + moves + ".");
+					break;
 				}
 				board.displayBoard();
 				black.checkGameStatus(white);
@@ -48,16 +47,17 @@ public class Game
 				System.out.print("Black, enter move; ");
 				move = input.nextLine();
 				
-				if(move.equals("Print"))
-				{
-					black.printPossibleMoves(white);
-					System.out.print("Black, enter move; ");
-					move = input.nextLine();
-				}
-				while(!black.movePiece(move, board, white))
+				while(!move.equals("Resign") && !black.movePiece(move, board, white))
 				{
 					move = input.nextLine();
 				}
+				if(move.equals("Resign"))
+				{
+					board.displayBoard();
+					System.out.println("Black resigns on move " + moves + ".");
+					break;
+				}
+				
 				board.displayBoard();
 				white.checkGameStatus(black);
 			}

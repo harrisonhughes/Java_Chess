@@ -106,7 +106,7 @@ public class Team
 				for(int i = 0; i < otherTeam.getPieceList().size(); i++)
 				{
 					// If the current piece is a pawn that is behind another piece, then we have the correct possible en Passant format
-					boolean enPassantFormat = (currentPiece.getPiece().substring(1).equals("P")) && (currentPiece.getPosition() / 10) 
+					boolean enPassantFormat = (currentPiece.getClass() == Pawn.class) && (currentPiece.getPosition() / 10) 
 							== (otherTeam.getPieceList().get(i).getPosition() / 10) && (currentPiece.getPosition() % 10) 
 							== ((otherTeam.getPieceList().get(i).getPosition() % 10) + currentPiece.getTeam());
 					
@@ -143,34 +143,6 @@ public class Team
 			System.out.print("Invalid move, try again: ");
 			return false;
 		}
-	}
-	
-	public void printPossibleMoves(Team otherTeam)
-	{	
-		for(int i = 0; i < teamPieces.size(); i++)
-		{
-			Piece currentPiece = teamPieces.get(i);
-			setMoves(currentPiece, otherTeam);
-			if(currentPiece.getPossibleMoves().size() > 0)
-			{
-				System.out.println("Possible Moves for " + currentPiece.getPiece() + " on " 
-									+ currentPiece.intToChess(currentPiece.getPosition()).substring(1, 3) + ": ");
-				for(int j = 0; j < currentPiece.getPossibleMoves().size(); j++)
-				{
-						System.out.print(currentPiece.intToChess(currentPiece.getPossibleMoves().get(j)));
-						if(j < currentPiece.getPossibleMoves().size() - 1)
-						{
-							System.out.print(", ");
-						}
-						else
-						{
-							System.out.print("\n");
-						}
-				}
-				System.out.print("\n");
-			}
-		}
-		
 	}
 	
 	/**
@@ -275,7 +247,7 @@ public class Team
 			currentPiece.setPosition(currentMove);
 			setPossibleMoves(currentPiece, otherTeam);
 			
-			LinkedList<Piece> otherPieces = new LinkedList<Piece>(otherTeam.getPieceList());
+			LinkedList<Piece> otherPieces = otherTeam.getPieceList();
 			ListIterator<Piece> otherIterator = otherPieces.listIterator();
 			
 			while(otherIterator.hasNext())
@@ -334,10 +306,11 @@ public class Team
 		Piece castleRook = null;
 		for(int i = 0; i < teamPieces.size(); i++)
 		{ // Finds the correct rook given the castle direction and the team color: if the rook has made a previous move, castling is invalid
-			if((teamPieces.get(i).getPosition() == rookWhitePosition || teamPieces.get(i).getPosition() == rookBlackPosition) 
-					&& teamPieces.get(i).getFirstMove())
+			Piece currentPiece = teamPieces.get(i);
+			int currentPiecePosition = currentPiece.getPosition();
+			if((currentPiecePosition == rookWhitePosition || currentPiecePosition == rookBlackPosition) && currentPiece.getFirstMove())
 			{
-				castleRook = teamPieces.get(i);
+				castleRook = currentPiece;
 			}
 		}
 		if(castleRook == null)
@@ -346,9 +319,10 @@ public class Team
 		}
 		
 		boolean piecesInWay = true;
+		Piece thisKing = teamPieces.get(0);
 		for(int i = 0; i < castleRook.getSquaresAttacked().size(); i++)
 		{ // If the specific rook attacks its own king, we know there are no pieces between them that would block a castle move
-			if(teamPieces.get(0).getPosition() == castleRook.getSquaresAttacked().get(i))
+			if(thisKing.getPosition() == castleRook.getSquaresAttacked().get(i))
 			{
 				piecesInWay = false;
 			}
@@ -358,15 +332,14 @@ public class Team
 			return false;
 		}
 		
-		
-		int castleMove = teamPieces.get(0).getPosition() + columnShift; // One column away from king, on the correct castle side
-		String castleString = teamPieces.get(0).intToChess(castleMove);
-		if(teamPieces.get(0).movePiece(castleString, board) && teamPieces.get(0).getFirstMove())
+		int castleMove = thisKing.getPosition() + columnShift; // One column away from king, on the correct castle side
+		String castleString = thisKing.intToChess(castleMove);
+		if(thisKing.getFirstMove() && thisKing.movePiece(castleString, board))
 		{ // If the king has not moved and can move one column towards its correct castle side
-			setMoves(teamPieces.get(0), otherTeam);
+			setMoves(thisKing, otherTeam);
 			castleMove += columnShift; // One more column towards the correct castle side
-			castleString = teamPieces.get(0).intToChess(castleMove);
-			if(teamPieces.get(0).movePiece(castleString, board))
+			castleString = thisKing.intToChess(castleMove);
+			if(thisKing.movePiece(castleString, board))
 			{ // If the king can move one more column: moving one column at a time confirms that the king is not castling through, or into check
 				board.deleteOldPiece(castleRook); // Delete and update rook position
 				castleRook.setPosition(castleMove - columnShift); // One column towards the center from the king
@@ -376,8 +349,8 @@ public class Team
 			else
 			{ // If the king can move to the first column but not the second, we must move it back to its original square
 				castleMove += -2 * columnShift; // Kings starting position, two columns towards the center from the castle column
-				castleString = teamPieces.get(0).intToChess(castleMove);
-				teamPieces.get(0).movePiece(castleString, board);
+				castleString = thisKing.intToChess(castleMove);
+				thisKing.movePiece(castleString, board);
 			}
 		}
 			return false;
@@ -567,17 +540,16 @@ public class Team
 		{ // If either team has 2 remaining pieces besides its King, there is sufficient material to checkmate
 			for(int i = 0; i < thisTotalPieces; i++)
 			{
-				if(teamPieces.get(i).getPiece().substring(1).equals("Q") || teamPieces.get(i).getPiece().substring(1).equals("R") 
-						|| teamPieces.get(i).getPiece().substring(1).equals("P")) 
+				if(teamPieces.get(i).getClass() == Queen.class || teamPieces.get(i).getClass() == Rook.class  
+						|| teamPieces.get(i).getClass() == Pawn.class) 
 				{ // If either team has a Queen, Rook, or pawn, there is sufficient material to checkmate
 					insuffMaterial = false;
 				}
 			}
 			for(int i = 0; i < otherTotalPieces; i++)
 			{
-				if(otherTeam.getPieceList().get(i).getPiece().substring(1).equals("Q") 
-						|| otherTeam.getPieceList().get(i).getPiece().substring(1).equals("R")
-						|| otherTeam.getPieceList().get(i).getPiece().substring(1).equals("P"))
+				if(otherTeam.getPieceList().get(i).getClass() == Queen.class || otherTeam.getPieceList().get(i).getClass() == Rook.class 
+						|| otherTeam.getPieceList().get(i).getClass() == Pawn.class)
 				{
 					insuffMaterial = false;
 				}
@@ -665,7 +637,7 @@ public class Team
 		
 		if(getCheck())
 		{
-			if(getPieceList().get(0).getTeam() == WHITE_TEAM)
+			if(teamPieces.get(0).getTeam() == WHITE_TEAM) // Checking the team of an arbitrary piece of the current team
 			{ // If the white team has no moves and is in check, else if the black team has no moves and is in check
 				System.out.println("Checkmate. Black Wins!");
 				System.exit(0);
